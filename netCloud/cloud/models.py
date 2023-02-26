@@ -4,15 +4,16 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 
+from . import xdata
 
-# Create your models here.
+
 class File(models.Model):
-    FILE_TYPE = [('F', 'File'), ('D', 'Directory')]
-
     file_name = models.CharField(max_length=64, verbose_name='文件名')
-    file_type = models.CharField(max_length=1, choices=FILE_TYPE, verbose_name='文件类型')
-    file_size = models.IntegerField(verbose_name='文件大小(Bytes)')
+    file_type = models.CharField(max_length=1, choices=xdata.FILE_TYPE_CHOICE, verbose_name='文件类型')
+    file_size = models.FloatField(verbose_name='文件大小(KiloBytes)')
     store_path = models.CharField(max_length=320, verbose_name='HDFS存储路径')
+    is_delete = models.BooleanField(default=False, verbose_name='是否删除')
+    ext_info = models.CharField(max_length=3200, verbose_name='扩展信息')
 
     class Meta:
         db_table = 'file'
@@ -22,12 +23,14 @@ class File(models.Model):
     def __str__(self):
         return self.file_name
 
+
 class User(AbstractUser):
     is_subscribe = models.BooleanField(default=False, verbose_name='是否订阅')
-    disk_remaining = models.BigIntegerField(default=1024 * 1024 * 1024, verbose_name='用户存储空间剩余容量(Bytes)')
-    disk_total = models.BigIntegerField(default=1024 * 1024 * 1024, verbose_name='用户存储空间总量(Bytes)')
+    disk_remaining = models.FloatField(default=xdata.GIGABYTE, verbose_name='用户存储空间剩余容量(KiloBytes)')
+    disk_total = models.BigIntegerField(default=xdata.GIGABYTE, verbose_name='用户存储空间总量(KiloBytes)')
     files = models.ManyToManyField(to=File, related_name='users', verbose_name='用户文件')
-    friends = models.ManyToManyField(to='self', verbose_name='好友')
+    is_delete = models.BooleanField(default=False, verbose_name='是否删除')
+    ext_info = models.CharField(max_length=3200, verbose_name='扩展信息')
 
     class Meta:
         db_table = 'user'
@@ -35,14 +38,25 @@ class User(AbstractUser):
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return self.username
+        clsname = self.__class__.__name__
+        return '{}:{{' \
+               'username={}, ' \
+               'is_subscribe={}, ' \
+               'disk_remaining={}, ' \
+               'disk_total={}' \
+               '}}'.format(clsname, self.username,
+                           self.is_subscribe,
+                           self.disk_remaining,
+                           self.disk_total)
+
+    __repr__ = __str__
+
 
 class SubRecord(models.Model):
-    SUB_TYPE = [(1, 'month'), (3, 'months'), (6, 'half'), (12, 'year'), (-1, 'continue_sub')]
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sub_records',
                              verbose_name='用户')
     subscribe_at = models.DateTimeField(auto_now_add=True, verbose_name='订阅开始时间')
-    subscribe_type = models.IntegerField(choices=SUB_TYPE, verbose_name='订阅类型')
+    subscribe_type = models.IntegerField(choices=xdata.SUBSCRIBE_TYPE_CHOICE, verbose_name='订阅类型')
     invalid = models.BooleanField(default=False, verbose_name='订阅是否到期')
 
     class Meta:
@@ -58,12 +72,14 @@ class SubRecord(models.Model):
         }
         return json.dumps(_str)
 
+    @property
+    def subscribe_at_utc8(self):
+        return self.subscribe_at.astimezone(tz=xdata.TIMEZONE_UTC_8)
+
+
 class FileOperateRecord(models.Model):
-    OPERATE_TYPE = [('U', 'Upload'), ('D', 'Down'), ('S', 'Share')]
-
-    operate_type = models.CharField(max_length=1, choices=OPERATE_TYPE, verbose_name='操作类型')
+    operate_type = models.CharField(max_length=1, choices=xdata.OPERATE_FILE_TYPE_CHOICE, verbose_name='操作类型')
     operate_at = models.DateTimeField(auto_now_add=True, verbose_name='操作时间')
-
     file = models.ForeignKey(to=File, on_delete=models.CASCADE, related_name='file_operate_records', verbose_name='文件')
     user = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name='file_operate_records', verbose_name='用户')
 

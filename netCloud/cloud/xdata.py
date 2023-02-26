@@ -1,0 +1,55 @@
+# 磁盘容量单位
+from datetime import timezone, timedelta
+
+KILOBYTE = 1  # kb = 1024 byte
+MEGABYTE = 1024 * KILOBYTE
+GIGABYTE = 1024 * MEGABYTE
+
+MEMORY_UNIT_DISPLAY_DICT = {
+    MEGABYTE: 'MB',
+    GIGABYTE: 'GB'
+}
+
+# 文件类型
+FILE_TYPE_DIRECTORY = 'D'
+FILE_TYPE_TEXT = 'T'
+FILE_TYPE_IMAGE = 'I'
+
+FILE_TYPE_CHOICE = [
+    (FILE_TYPE_DIRECTORY, 'Directory'),
+    (FILE_TYPE_TEXT, 'Text'),
+    (FILE_TYPE_IMAGE, 'Image')
+]
+
+# 订阅类型
+SUBSCRIBE_TYPE_MONTH = 30
+SUBSCRIBE_TYPE_MONTHS = 90
+SUBSCRIBE_TYPE_HALF = 180
+SUBSCRIBE_TYPE_YEAR = 360
+# SUBSCRIBE_TYPE_CONTINUE = -1
+
+SUBSCRIBE_TYPE_CHOICE = [
+    (SUBSCRIBE_TYPE_MONTH, 'month'),
+    (SUBSCRIBE_TYPE_MONTHS, 'months'),
+    (SUBSCRIBE_TYPE_HALF, 'half'),
+    (SUBSCRIBE_TYPE_YEAR, 'year'),
+    # (SUBSCRIBE_TYPE_CONTINUE, 'continue'),
+]
+
+# 文件操作类型
+OPERATE_FILE_TYPE_UPLOAD = 'U'
+OPERATE_FILE_TYPE_DOWN = 'D'
+OPERATE_FILE_TYPE_SHARE = 'S'
+
+OPERATE_FILE_TYPE_CHOICE = [
+    (OPERATE_FILE_TYPE_UPLOAD, 'Upload'),
+    (OPERATE_FILE_TYPE_DOWN, 'Down'),
+    (OPERATE_FILE_TYPE_SHARE, 'Share'),
+]
+
+# 东八区时区
+
+TIMEZONE_UTC_8 = timezone(timedelta(hours=8))
+
+# HDFS 文件路径
+HDFS_PATH_PREFIX = '/netCloud/user/'
