@@ -1,8 +1,13 @@
+import os
+
 from django.test import TestCase
 
 # Create your tests here.
+from . import xdata
 from .models import SubRecord
 from .model_helper import SubRecordHelper, UserHelper
+from .util_helper import HDFSHelper
+
 
 class Test(TestCase):
 
@@ -15,3 +20,7 @@ class Test(TestCase):
         sub_records = SubRecord.objects.all().first()
         print(sub_records.subscribe_at)
         print(type(sub_records.subscribe_at))
+
+    def test_hdfs_file_op(self):
+        HDFSHelper.upload(os.path.join(xdata.TEMP_FILE_PATH, 'a.txt'), '/')
+

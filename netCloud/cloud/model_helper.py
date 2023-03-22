@@ -3,6 +3,7 @@ import logging
 from . import xdata
 from .models import User, SubRecord, File
 from datetime import datetime, timedelta
+from .util_helper import HDFSHelper
 
 logger = logging.getLogger(__name__)
 
@@ -61,17 +62,20 @@ class FileHelper:
         return file
 
     @staticmethod
-    def create_user_dir(user_id):
-        path = xdata.HDFS_PATH_PREFIX + user_id
+    def create_user_dir(ident):
+        """创建用户根目录"""
+        path = HDFSHelper.make_hdfs_path(ident)
+        File.objects.create(file_name=ident, file_type=xdata.FILE_TYPE_DIRECTORY, file_size=0, store_path=path)
 
-        File.objects.create(file_name=user_id, file_type=xdata.FILE_TYPE_DIRECTORY, file_size=0, store_path='')
-
-
-class HDFSHelper:
     @staticmethod
-    def create_dir(path):
+    def query_by_id(file_id):
+        try:
+            return File.objects.get(pk=file_id)
+        except File.DoesNotExist as e:
+            logger.warning('file is not found: {}'.format(e))
+            return None
 
+    @staticmethod
+    def create():
 
-        pass
-
-
+        ...

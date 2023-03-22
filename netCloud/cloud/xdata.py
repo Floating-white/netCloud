@@ -47,9 +47,14 @@ OPERATE_FILE_TYPE_CHOICE = [
     (OPERATE_FILE_TYPE_SHARE, 'Share'),
 ]
 
-# 东八区时区
+# ext 扩展信息
+EXT_SUB_FILE_IDS = 'sub_file_ids'
 
+# 东八区时区
 TIMEZONE_UTC_8 = timezone(timedelta(hours=8))
 
 # HDFS 文件路径
-HDFS_PATH_PREFIX = '/netCloud/user/'
+HDFS_PATH_PREFIX = '/cloud/user/'
+
+# 临时文件保存路径
+TEMP_FILE_PATH = 'D:/'

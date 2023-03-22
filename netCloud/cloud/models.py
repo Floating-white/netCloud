@@ -1,4 +1,5 @@
 import json
+import uuid
 
 from django.db import models
 from django.contrib.auth.models import AbstractUser
@@ -13,7 +14,7 @@ class File(models.Model):
     file_size = models.FloatField(verbose_name='文件大小(KiloBytes)')
     store_path = models.CharField(max_length=320, verbose_name='HDFS存储路径')
     is_delete = models.BooleanField(default=False, verbose_name='是否删除')
-    ext_info = models.CharField(max_length=3200, verbose_name='扩展信息')
+    ext_info = models.CharField(max_length=3200, default='{}', verbose_name='扩展信息')
 
     class Meta:
         db_table = 'file'
@@ -23,6 +24,17 @@ class File(models.Model):
     def __str__(self):
         return self.file_name
 
+    def load_from_ext(self, key, default):
+        ext = json.loads(self.ext_info)
+        try:
+            return ext[key]
+        except KeyError:
+            return default
+
+    @property
+    def sub_file_ids(self):
+        return self.load_from_ext(xdata.EXT_SUB_FILE_IDS, [])
+
 
 class User(AbstractUser):
     is_subscribe = models.BooleanField(default=False, verbose_name='是否订阅')
@@ -30,6 +42,7 @@ class User(AbstractUser):
     disk_total = models.BigIntegerField(default=xdata.GIGABYTE, verbose_name='用户存储空间总量(KiloBytes)')
     files = models.ManyToManyField(to=File, related_name='users', verbose_name='用户文件')
     is_delete = models.BooleanField(default=False, verbose_name='是否删除')
+    ident = models.UUIDField(default=uuid.uuid4().hex, verbose_name='标识符')
     ext_info = models.CharField(max_length=3200, verbose_name='扩展信息')
 
     class Meta:
@@ -40,14 +53,12 @@ class User(AbstractUser):
     def __str__(self):
         clsname = self.__class__.__name__
         return '{}:{{' \
+               'id={},' \
                'username={}, ' \
                'is_subscribe={}, ' \
                'disk_remaining={}, ' \
                'disk_total={}' \
-               '}}'.format(clsname, self.username,
-                           self.is_subscribe,
-                           self.disk_remaining,
-                           self.disk_total)
+               '}}'.format(clsname, self.id, self.username, self.is_subscribe, self.disk_remaining, self.disk_total)
 
     __repr__ = __str__
 
